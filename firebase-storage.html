@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Firebase Image Upload in Javascript</title>
+  </head>
+  <body>
+    <input id="name" type="text"/>
+    <input id="photo" type="file"/>
+    <button onclick="uploadImage()">Upload</button>
+  </body>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+  <script src="js/config.js"></script>
+
+  <script>
+    
+    function uploadImage() {
+      const file = document.querySelector("#photo").files[0];
+      const product_name = document.getElementById("name").value;
+      console.log(product_name);
+      const name = +new Date() + file.name;
+      const metadata = {
+        contentType: file.type
+      };
+      const task = storageRef.child('img/'+name).put(file, metadata);
+      task
+        .then(snapshot => snapshot.ref.getDownloadURL())
+        .then(url => {
+          console.log(url);
+          // Add a new document in collection "cities"
+          dbRef.collection("products").add({
+            product_name: product_name, 
+            product_URL: url,
+          })
+          .then((docRef) => {
+              console.log("Document written with ID: ", docRef.id);
+              dbRef.collection("products").doc(docRef.id).update({
+                product_id: docRef.id,
+              })
+          })
+          .catch((error) => {
+              console.error("Error adding document: ", error);
+          });
+          
+          // doc('document_name').set({
+          //   product_name: product_name,
+          //   product_URL: url,
+   
+          // })
+          // .then(() => {
+          //     console.log("Document successfully written!");
+          // })
+          // .catch((error) => {
+          //     console.error("Error writing document: ", error);
+          // });
+        })
+        .catch(console.error);
+    }
+  </script>
+</html>
